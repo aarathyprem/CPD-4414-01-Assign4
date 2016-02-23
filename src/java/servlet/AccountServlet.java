@@ -16,13 +16,60 @@
 
 package servlet;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import model.Account;
 
 /**
  * Provides an Account Balance and Basic Withdrawal/Deposit Operations
  */
 @WebServlet("/account")
-public class AccountServlet extends HttpServlet {
+public class AccountServlet extends HttpServlet{
     
+    Account instance = new Account();
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+        
+        try(PrintWriter out = response.getWriter()) {
+            response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+                
+            out.println(instance.getBalance());
+                        
+        } catch (IOException ex) {
+            response.setStatus(500);
+        }
+        
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+        
+        String withdrawCash = request.getParameter("withdraw");
+        String depositCash = request.getParameter("deposit");
+        String closeAcct = request.getParameter("close");
+        
+        try(PrintWriter out = response.getWriter()) {
+            if(withdrawCash != null)
+                instance.withdraw(Double.parseDouble(withdrawCash));
+            if(depositCash != null)
+                instance.deposit(Double.parseDouble(depositCash));
+            if(Boolean.parseBoolean(closeAcct))
+                instance.close();
+            
+            out.println(instance.getBalance());
+            
+        } catch (IOException ex) {
+            response.setStatus(500);
+        }
+        
+    }
 }
